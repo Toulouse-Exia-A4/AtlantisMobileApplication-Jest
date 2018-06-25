@@ -1,0 +1,24 @@
+<!--
+  Generated template for the NewPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>SendCommandToDevice</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+  <form (ngSubmit)="sendCommandToDevice()">
+    <ion-item>
+      <ion-label>Command</ion-label>
+      <ion-input type="text" [(ngModel)]="command" name="Command" required></ion-input>
+    </ion-item>
+    <button ion-button type="submit" block>Send</button>
+  </form>
+</ion-content>
