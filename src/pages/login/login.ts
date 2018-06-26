@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import { AlertsProvider } from '../../providers/Alerts';
 import { LoadingController, NavController, Platform, NavParams, MenuController } from 'ionic-angular';
 import { DevicesListPage } from '../devicesList/devicesList';
-import { HttpRequestsProvider } from '../../providers/HttpRequests';
+import { AlertsProvider } from '../../providers/Alerts';
 import { EliotAPIProvider } from '../../providers/EliotAPI';
 
 /*

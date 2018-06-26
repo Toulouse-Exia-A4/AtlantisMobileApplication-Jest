@@ -1,5 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA, EventEmitter } from '@angular/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Platform, MenuController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -28,25 +28,9 @@ describe('MyApp', () => {
   const menuControllerStub = {
     close: (): Promise<Boolean> => new Promise<Boolean>((resolve, reject) => resolve(true))
   };
-  // const alertsProviderStub = {
-  //   showErrorAlert: (): void => undefined,
-  //   showSuccessAlert: (): void => undefined
-  // };
   const httpRequestProviderStub = {
-    // post: (): Promise<any> => undefined,
-    // get: (): Promise<any> => undefined,
     checkUserLoggedIn: (): Promise<Boolean> => new Promise<Boolean>((resolve, reject) => resolve(true)),
-    // saveToken: (): void => undefined,
-    // getTokenFromStorage: (): Promise<any> => undefined,
     clearStorage: (): void => undefined
-  };
-  const eliotAPIProviderStub = {
-    authenticate: (): Promise<string> => undefined
-  };
-  const mobileAPIProviderStub = {
-    getDevices: (): Promise<Array<any>> => undefined,
-    getDeviceInfo: (): Promise<any> => undefined,
-    sendCommandToDevice: (): Promise<any> => undefined
   };
 
   beforeEach(() => {

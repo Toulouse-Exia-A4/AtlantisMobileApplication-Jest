@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { LoadingController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
@@ -17,7 +16,7 @@ export class HttpRequestsProvider {
 
   protected ApiEndPoint = 'http://localhost:8733';
 
-    constructor(public http: HttpClient, public storage: Storage, public loadingCtrl: LoadingController) {
+    constructor(public http: HttpClient, public storage: Storage) {
         console.log('Hello HttpRequests Provider');
     }
 
@@ -53,15 +52,15 @@ export class HttpRequestsProvider {
         .catch(this.handleError);
     }
 
-    private BuildURLParametersString(parameters: any): string {
-      if (!parameters || parameters == null)
+    public BuildURLParametersString(parameters: any): string {
+      if (!parameters || parameters == null || Object.keys(parameters).length === 0)
         return "";
 
       var string = "?";
 
       var separator = "";
       Object.keys(parameters).forEach(key => {
-        string += separator + decodeURI(key) + encodeURI(parameters[key]);
+        string += separator + decodeURI(key) + "=" + encodeURI(parameters[key]);
         separator = "&";
       });
 
