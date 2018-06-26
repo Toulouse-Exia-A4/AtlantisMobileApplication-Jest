@@ -28,8 +28,8 @@ class Device {
 @Injectable()
 export class MobileAPIProvider extends HttpRequestsProvider {
 
-    constructor(public http: HttpClient, public storage: Storage, public loadingCtrl: LoadingController) {
-        super(http, storage, loadingCtrl);
+    constructor(public http: HttpClient, public storage: Storage) {
+        super(http, storage);
         console.log('Hello MobileAPI Provider');
     }
 
