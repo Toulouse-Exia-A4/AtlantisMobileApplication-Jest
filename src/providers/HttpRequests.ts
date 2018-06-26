@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { LoadingController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { Observable } from 'rxjs/Observable';
@@ -21,15 +21,14 @@ export class HttpRequestsProvider {
         console.log('Hello HttpRequests Provider');
     }
 
-    post(url: string, body: any): Promise<any> {
-      let headerDict = {
-        'Content-Type': 'application/json',
-      }
+    post(url: string, body: any, urlEncoded?: Boolean): Promise<any> {
+      let headerDict = {}
+      headerDict["Content-Type"] =  urlEncoded ? 'application/x-www-form-urlencoded' : 'application/json';
 
       const requestOptions = {
         headers: new HttpHeaders(headerDict),
       };
-      
+
       console.log("Call post " + url);
       return this.http.post(url, body, requestOptions)
         .toPromise()
@@ -70,7 +69,7 @@ export class HttpRequestsProvider {
     }
 
     async checkUserLoggedIn() {
-      return this.getTokenFromStorage()
+      return this.getUserIdFromStorage()
         .then((result) => {
           if (result.length > 0) {
             return true;
@@ -86,29 +85,27 @@ export class HttpRequestsProvider {
 
     //'Borrowed' from //https://angular.io/docs/ts/latest/guide/server-communication.html
     private extractData(res: Response) {
-      //Convert the response to JSON format
-      let body = res.json();
       //Return the data (or nothing)
-      return body || {};
+      return res || {};
     }
 
     //'Borrowed' from //https://angular.io/docs/ts/latest/guide/server-communication.html
     private handleError(res: Response | any) {
       console.error('Entering handleError');
-      console.dir(res.json());
-      return Promise.reject(res.json().error || res.message || res);
+      console.dir(res);
+      return Promise.reject(res.message || res.error || res);
     }
 
-    public saveToken(token: string) {
-      return this.storage.set("token", token);
+    public saveUserId(userId: string) {
+      return this.storage.set("userid", userId);
     }
 
-    public getTokenFromStorage() {
-      return this.storage.get('token');
+    public getUserIdFromStorage() {
+      return this.storage.get('userid');
     }
 
     public clearStorage() {
-      this.storage.remove("token");
+      this.storage.remove("userid");
     }
 
 }
