@@ -18,7 +18,8 @@
 
 <ion-content padding>
   <ion-card *ngFor="let device of devices" (click)="goToDevice(device)">
-    <h3>{{device.id}}</h3>
+    <ion-card-header>{{device.deviceId}}</ion-card-header>
+    <ion-card-content>Type: {{device.type}}</ion-card-content>
   </ion-card>
 
 </ion-content>

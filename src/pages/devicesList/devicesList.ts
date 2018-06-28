@@ -35,7 +35,7 @@ export class DevicesListPage {
       //Show the loading indicator
       loader.present();
 
-      this.mobileApi.getDevices().then(
+      this.mobileApi.getUserDevices().then(
         data => {
           loader.dismiss();
           this.devices = data;

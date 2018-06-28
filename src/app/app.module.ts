@@ -1,11 +1,13 @@
-import { NgModule, ErrorHandler } from '@angular/core';
+import { NgModule, ErrorHandler, InjectionToken, Inject, Injectable } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 import { MyApp } from './app.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { IonicStorageModule } from '@ionic/storage';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/timeout';
 
 import { ApplicationConfig, MY_CONFIG, MY_CONFIG_TOKEN } from './app.config';
 
@@ -19,6 +21,19 @@ import { AlertsProvider } from '../providers/Alerts';
 import { HttpRequestsProvider } from '../providers/HttpRequests';
 import { EliotAPIProvider } from '../providers/EliotAPI';
 import { MobileAPIProvider } from '../providers/MobileAPI';
+
+const DEFAULT_TIMEOUT = new InjectionToken<number>('defaultTimeout');
+const defaultTimeout = 30000;
+
+@Injectable()
+export class TimeoutInterceptor implements HttpInterceptor {
+  constructor(@Inject(DEFAULT_TIMEOUT) protected defaultTimeout) {}
+
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const timeout = Number(req.headers.get('timeout')) || this.defaultTimeout;
+    return next.handle(req).timeout(timeout);
+  }
+}
 
 @NgModule({
   declarations: [
@@ -52,6 +67,8 @@ import { MobileAPIProvider } from '../providers/MobileAPI';
     EliotAPIProvider,
     MobileAPIProvider,
     {provide: MY_CONFIG_TOKEN, useValue: MY_CONFIG},
+    {provide: HTTP_INTERCEPTORS, useClass: TimeoutInterceptor, multi: true},
+    {provide: DEFAULT_TIMEOUT, useValue: defaultTimeout},
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

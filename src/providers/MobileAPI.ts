@@ -10,14 +10,20 @@ import { ApplicationConfig, MY_CONFIG, MY_CONFIG_TOKEN } from '../app/app.config
 
 
 class Device {
-  id: String;
-  calcMetrics: Array<Number>;
-  rawMetrics: Array<Number>;
+  id:           number;
+  deviceId:     String;
+  type:         string;
+  unit:         string;
+  calcMetrics:  Array<Number>;
+  rawMetrics:   Array<Number>;
 
   constructor(obj?: any) {
-    this.id = obj && obj.id || null;
-    this.calcMetrics = obj && obj.calcMetrics || null;
-    this.rawMetrics = obj && obj.rawMetrics || null;
+    this.id           = obj && obj.id           || null;
+    this.deviceId     = obj && obj.deviceId     || null;
+    this.type         = obj && obj.type         || null;
+    this.unit         = obj && obj.unit         || null;
+    this.calcMetrics  = obj && obj.calcMetrics  || null;
+    this.rawMetrics   = obj && obj.rawMetrics   || null;
   }
 }
 
@@ -42,23 +48,25 @@ export class MobileAPIProvider extends HttpRequestsProvider {
         this.ApiEndPoint = configuration.mobileApiEndpoint;
     }
 
-    getDevices(): Promise<Array<Device>> {
-      return this.get(this.ApiEndPoint + '/device/all').then(
-        data => {
-          return data; 
+    getUserDevices(): Promise<Array<Device>> {
+      return this.getUserIdFromStorage().then(
+        userId => {
+          return this.get(this.ApiEndPoint + '/getUserDevices?userId=' + userId).then(
+            data => {
+              return data.map(item => {
+                return new Device(item);
+              })
+            },
+            error => {
+              console.log(error);
+              return Promise.reject("Could not get device list from API");
+            }
+          );
         },
         error => {
-          //return Promise.reject("Could not get device list from API");
-          return [
-            new Device({ id: 'azerty' }),
-            new Device({ id: 'qsdfgh' }),
-            new Device({ id: 'wxcvbn' }),
-            new Device({ id: 'poiuyt' }),
-            new Device({ id: 'mlkjhg' })
-          ];
+          return Promise.reject("Could not get userId from storage");
         }
-      );
-
+      )
     }
 
     getDeviceInfo(device: Device): Promise<Device> {
