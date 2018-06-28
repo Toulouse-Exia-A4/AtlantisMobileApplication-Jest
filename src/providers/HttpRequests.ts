@@ -14,8 +14,6 @@ import 'rxjs/add/operator/toPromise';
 @Injectable()
 export class HttpRequestsProvider {
 
-  protected ApiEndPoint = 'http://localhost:8733';
-
     constructor(public http: HttpClient, public storage: Storage) {
         console.log('Hello HttpRequests Provider');
     }
