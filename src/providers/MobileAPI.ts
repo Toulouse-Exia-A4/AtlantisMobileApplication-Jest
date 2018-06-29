@@ -102,25 +102,39 @@ export class MobileAPIProvider extends HttpRequestsProvider {
     }
 
     getDeviceRawMetrics(device: Device, timestamp: number): Promise<Array<RawMetric>> {
-      return this.get(this.ApiEndPoint + '/getDeviceRawMetrics?deviceId=' + device.deviceId + "&timestamp=" + timestamp).then(
-        data => {
-          var rawMetrics = data.map(rawMetric => {return new RawMetric(rawMetric)});
-          return rawMetrics;
-        },
+      return this.getUserIdFromStorage().then(
+        userId => {
+          return this.get(this.ApiEndPoint + '/getDeviceRawMetrics?userId=' + userId + '&deviceId=' + device.deviceId + "&timestamp=" + timestamp).then(
+            data => {
+              var rawMetrics = data.map(rawMetric => {return new RawMetric(rawMetric)});
+              return rawMetrics;
+            },
+            error => {
+              return Promise.reject("Could not get device raw metrics from API");
+            }
+          );
+        }, 
         error => {
-          return Promise.reject("Could not get device raw metrics from API");
+          return Promise.reject("Could not get userId from storage");
         }
       );
     }
 
     getDeviceCalcMetrics(device: Device, timestamp: number): Promise<Array<CalcMetric>> {
-      return this.get(this.ApiEndPoint + '/getDeviceCalcMetrics?deviceId=' + device.deviceId + "&timestamp=" + timestamp).then(
-        data => {
-          var calcMetrics = data.map(calcMetric => {return new CalcMetric(calcMetric)});
-          return calcMetrics;
+      return this.getUserIdFromStorage().then(
+        userId => {
+          return this.get(this.ApiEndPoint + '/getDeviceCalcMetrics?userId=' + userId + '&deviceId=' + device.deviceId + "&timestamp=" + timestamp).then(
+            data => {
+              var calcMetrics = data.map(calcMetric => {return new CalcMetric(calcMetric)});
+              return calcMetrics;
+            },
+            error => {
+              return Promise.reject("Could not get device raw metrics from API");
+            }
+          );
         },
         error => {
-          return Promise.reject("Could not get device raw metrics from API");
+          return Promise.reject("Could not get userId from storage");
         }
       );
     }
