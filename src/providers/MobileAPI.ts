@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { LoadingController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
@@ -6,6 +6,8 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 import { HttpRequestsProvider } from './HttpRequests';
+import { ApplicationConfig, MY_CONFIG, MY_CONFIG_TOKEN } from '../app/app.config';
+
 
 class Device {
   id: String;
@@ -28,9 +30,16 @@ class Device {
 @Injectable()
 export class MobileAPIProvider extends HttpRequestsProvider {
 
-    constructor(public http: HttpClient, public storage: Storage) {
+  private ApiEndPoint: string;
+
+    constructor(
+      public http: HttpClient, 
+      public storage: Storage,
+      @Inject(MY_CONFIG_TOKEN) configuration: ApplicationConfig
+    ) {
         super(http, storage);
         console.log('Hello MobileAPI Provider');
+        this.ApiEndPoint = configuration.mobileApiEndpoint;
     }
 
     getDevices(): Promise<Array<Device>> {
