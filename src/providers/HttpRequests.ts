@@ -34,17 +34,9 @@ export class HttpRequestsProvider {
     }
 
     get(url: string, body: any = null): Promise<any> {
-      let headerDict = {
-        'Content-Type': 'application/json',
-      }
-
-      const requestOptions = {
-        headers: new HttpHeaders(headerDict),
-      };
-
       var urlGet = url + this.BuildURLParametersString(body);
       console.log("Call get " + urlGet);
-      return this.http.get(urlGet, requestOptions)
+      return this.http.get(urlGet)
         .toPromise()
         .then(this.extractData)
         .catch(this.handleError);
