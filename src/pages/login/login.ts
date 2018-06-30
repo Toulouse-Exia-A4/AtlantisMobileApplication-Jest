@@ -50,24 +50,18 @@ export class LoginPage {
     loader.present();
 
     this.eliotAPIProvider.authenticateMock(this.loginEntry).then(
-      data => {
-        this.eliotAPIProvider.saveUserId(data)
+      tokens => {
+        this.eliotAPIProvider.saveToken(tokens.token)
           .then((result) => {
-            loader.dismiss();
-            this.navCtrl.setRoot(DevicesListPage, { justLoggedIn: true });
+            this.eliotAPIProvider.saveRefreshToken(tokens.refreshToken)
+            .then(result2 => {
+              loader.dismiss();
+              this.navCtrl.setRoot(DevicesListPage, { justLoggedIn: true });
+            }).catch(err => { this.loginErrorHandler(err, loader) })
           })
-          .catch((err) => {
-            loader.dismiss();
-            console.log('Error Log in' + err);
-            this.alerts.showErrorAlert(err, "Log In");
-          });
-      },
-      error => {
-        loader.dismiss();
-        console.error('Error Log in');
-        console.dir(error);
-        this.alerts.showErrorAlert(error, "Log In");
-      }
+          .catch((err) => { this.loginErrorHandler(err, loader) });
+        },
+        error => { this.loginErrorHandler(error, loader) }
     );
   }
 
@@ -80,29 +74,30 @@ export class LoginPage {
         //Show the loading indicator
         loader.present();
 
-        this.eliotAPIProvider.getToken(success.code).then(
-          token => {
-            this.eliotAPIProvider.saveUserId(this.eliotAPIProvider.getUserIdFromToken(token))
+        this.eliotAPIProvider.getTokens(success.code).then(
+          tokens => {
+            this.eliotAPIProvider.saveToken(tokens.token)
               .then((result) => {
-                loader.dismiss();
-                this.navCtrl.setRoot(DevicesListPage, { justLoggedIn: true });
+                this.eliotAPIProvider.saveRefreshToken(tokens.refreshToken)
+                .then(result2 => {
+                  loader.dismiss();
+                  this.navCtrl.setRoot(DevicesListPage, { justLoggedIn: true });
+                }).catch(err => { this.loginErrorHandler(err, loader) })
               })
-              .catch((err) => {
-                loader.dismiss();
-                console.error('Error Log in' + err);
-                this.alerts.showErrorAlert(err, "Log In");
-              });
+              .catch((err) => { this.loginErrorHandler(err, loader) });
             },
-            error => {
-              loader.dismiss();
-              console.error('Error Log in' + error);
-              this.alerts.showErrorAlert(error, "Log In");
-            }
+            error => { this.loginErrorHandler(error, loader) }
         )
       }, (error) => {
           alert(error);
       });
     });
+  }
+
+  loginErrorHandler(err, loader) {
+    loader.dismiss();
+    console.error('Error Log in' + err);
+    this.alerts.showErrorAlert(err, "Log In");
   }
 
 }

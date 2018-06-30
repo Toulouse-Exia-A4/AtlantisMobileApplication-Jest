@@ -58,7 +58,7 @@ export class HttpRequestsProvider {
     }
 
     async checkUserLoggedIn() {
-      return this.getUserIdFromStorage()
+      return this.getTokenFromStorage()
         .then((result) => {
           if (result.length > 0) {
             return true;
@@ -82,19 +82,28 @@ export class HttpRequestsProvider {
     private handleError(res: Response | any) {
       console.error('Entering handleError');
       console.dir(res);
-      return Promise.reject(res.message || res.error || res);
+      return Promise.reject(res);
     }
 
-    public saveUserId(userId: string) {
-      return this.storage.set("userid", userId);
+    public saveToken(token: string) {
+      return this.storage.set("token", token);
     }
 
-    public getUserIdFromStorage() {
-      return this.storage.get('userid');
+    public saveRefreshToken(refreshToken: string) {
+      return this.storage.set("refreshToken", refreshToken);
+    }
+
+    public getTokenFromStorage() {
+      return this.storage.get("token");
+    }
+
+    public getRefreshTokenFromStorage() {
+      return this.storage.get("refreshToken");
     }
 
     public clearStorage() {
-      this.storage.remove("userid");
+      this.storage.remove("token");
+      this.storage.remove("refreshToken");
     }
 
 }

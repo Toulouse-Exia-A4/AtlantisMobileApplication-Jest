@@ -1,11 +1,11 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { LoadingController, DateTime } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
-import { HttpRequestsProvider } from './HttpRequests';
+import { EliotAPIProvider } from './EliotAPI';
 import { ApplicationConfig, MY_CONFIG, MY_CONFIG_TOKEN } from '../app/app.config';
 
 
@@ -66,7 +66,7 @@ class CalcMetric {
   for more info on providers and Angular 2 DI.
 */
 @Injectable()
-export class MobileAPIProvider extends HttpRequestsProvider {
+export class MobileAPIProvider extends EliotAPIProvider {
 
   private ApiEndPoint: string;
 
@@ -75,68 +75,76 @@ export class MobileAPIProvider extends HttpRequestsProvider {
       public storage: Storage,
       @Inject(MY_CONFIG_TOKEN) configuration: ApplicationConfig
     ) {
-        super(http, storage);
+        super(http, storage, configuration);
         console.log('Hello MobileAPI Provider');
         this.ApiEndPoint = configuration.mobileApiEndpoint;
     }
 
     getUserDevices(): Promise<Array<Device>> {
-      return this.getUserIdFromStorage().then(
-        userId => {
-          return this.get(this.ApiEndPoint + '/getUserDevices?userId=' + userId).then(
-            data => {
-              return data.map(item => {
-                return new Device(item);
-              })
-            },
-            error => {
-              console.log(error);
-              return Promise.reject("Could not get device list from API");
-            }
-          );
+      return this.requestMobileAPI(this.ApiEndPoint + '/getUserDevices').then(
+        data => {
+          return data.map(item => {
+            return new Device(item);
+          })
         },
-        error => {
-          return Promise.reject("Could not get userId from storage");
-        }
+        error => { return Promise.reject(error); }
       )
     }
 
     getDeviceRawMetrics(device: Device, timestamp: number): Promise<Array<RawMetric>> {
-      return this.getUserIdFromStorage().then(
-        userId => {
-          return this.get(this.ApiEndPoint + '/getDeviceRawMetrics?userId=' + userId + '&deviceId=' + device.deviceId + "&timestamp=" + timestamp).then(
-            data => {
-              var rawMetrics = data.map(rawMetric => {return new RawMetric(rawMetric)});
-              return rawMetrics;
-            },
-            error => {
-              return Promise.reject("Could not get device raw metrics from API");
-            }
-          );
-        }, 
+      var body = {
+        deviceId: device.deviceId,
+        timestamp: timestamp
+      };
+      return this.requestMobileAPI(this.ApiEndPoint + '/getDeviceRawMetrics', body).then(
+        data => {
+          var rawMetrics = data.map(rawMetric => {return new RawMetric(rawMetric)});
+          return rawMetrics;
+        },
         error => {
-          return Promise.reject("Could not get userId from storage");
+          return Promise.reject(error);
         }
-      );
+      )
     }
 
     getDeviceCalcMetrics(device: Device, timestamp: number): Promise<Array<CalcMetric>> {
-      return this.getUserIdFromStorage().then(
-        userId => {
-          return this.get(this.ApiEndPoint + '/getDeviceCalcMetrics?userId=' + userId + '&deviceId=' + device.deviceId + "&timestamp=" + timestamp).then(
-            data => {
-              var calcMetrics = data.map(calcMetric => {return new CalcMetric(calcMetric)});
-              return calcMetrics;
-            },
-            error => {
+      var body = {
+        deviceId: device.deviceId,
+        timestamp: timestamp
+      };
+      return this.requestMobileAPI(this.ApiEndPoint + '/getDeviceCalcMetrics', body).then(
+        data => {
+          var calcMetrics = data.map(calcMetric => {return new CalcMetric(calcMetric)});
+          return calcMetrics;
+        },
+        error => {
+          return Promise.reject(error);
+        }
+      )
+    }
+
+    private requestMobileAPI(url, body?: object): Promise<any> {
+      return this.getTokenFromStorage().then(
+        token => {
+          if (!body) body = {};
+          body["token"] = token;
+          return this.get(url + this.BuildURLParametersString(body)).then(
+            data => { return data },
+            (error: HttpErrorResponse) => { 
+              if (error.status == 401) {
+               return this.refreshToken().then(
+                 () => {
+                   return this.requestMobileAPI(url, body);
+                 },
+                 error => { return Promise.reject("session expired"); }
+               )
+              }
               return Promise.reject("Could not get device raw metrics from API");
             }
           );
         },
-        error => {
-          return Promise.reject("Could not get userId from storage");
-        }
-      );
+        error => { return Promise.reject("Could not get token from storage"); }
+      ); 
     }
 
     sendCommandToDevice(device: Device, command: any): Promise<any> {
