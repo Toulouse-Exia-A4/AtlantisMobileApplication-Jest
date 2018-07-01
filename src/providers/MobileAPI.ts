@@ -81,7 +81,7 @@ export class MobileAPIProvider extends EliotAPIProvider {
     }
 
     getUserDevices(): Promise<Array<Device>> {
-      return this.requestMobileAPI(this.ApiEndPoint + '/getUserDevices').then(
+      return this.requestMobileAPI(this.ApiEndPoint + '/getUserDevices', "Could not get user devices from MobileAPI").then(
         data => {
           return data.map(item => {
             return new Device(item);
@@ -96,7 +96,7 @@ export class MobileAPIProvider extends EliotAPIProvider {
         deviceId: device.deviceId,
         timestamp: timestamp
       };
-      return this.requestMobileAPI(this.ApiEndPoint + '/getDeviceRawMetrics', body).then(
+      return this.requestMobileAPI(this.ApiEndPoint + '/getDeviceRawMetrics', "Could not get user raw metrics from MobileAPI", body).then(
         data => {
           var rawMetrics = data.map(rawMetric => {return new RawMetric(rawMetric)});
           return rawMetrics;
@@ -112,7 +112,7 @@ export class MobileAPIProvider extends EliotAPIProvider {
         deviceId: device.deviceId,
         timestamp: timestamp
       };
-      return this.requestMobileAPI(this.ApiEndPoint + '/getDeviceCalcMetrics', body).then(
+      return this.requestMobileAPI(this.ApiEndPoint + '/getDeviceCalcMetrics', "Could not get user calc metrics from MobileAPI", body).then(
         data => {
           var calcMetrics = data.map(calcMetric => {return new CalcMetric(calcMetric)});
           return calcMetrics;
@@ -123,43 +123,55 @@ export class MobileAPIProvider extends EliotAPIProvider {
       )
     }
 
-    private requestMobileAPI(url, body?: object): Promise<any> {
+    sendCommandToDevice(device: Device, command: any): Promise<any> {
+      var body =  {
+        deviceId: device.deviceId,
+        command: command
+      };
+      return this.requestMobileAPI(this.ApiEndPoint + '/sendMessageToDevice',"Could not send command to device using MobileAPI", body, true).then(
+        data => {
+          return data;
+        },
+        error => {
+          return Promise.reject(error);
+        }
+      )
+    }
+
+    private requestMobileAPI(url: string, errorMessage: string, body?: object, post: boolean = false): Promise<any> {
       return this.getTokenFromStorage().then(
         token => {
           if (!body) body = {};
           body["token"] = token;
-          return this.get(url + this.BuildURLParametersString(body)).then(
-            data => { return data },
-            (error: HttpErrorResponse) => { 
-              if (error.status == 401) {
-               return this.refreshToken().then(
-                 () => {
-                   return this.requestMobileAPI(url, body);
-                 },
-                 error => { return Promise.reject("session expired"); }
-               )
+          if (post)
+            return this.post(url, body).then(
+              data => { return data; },
+              (error: HttpErrorResponse) => {
+                return this.requestMobileAPIErrorHandler(error, url, errorMessage, body, post);
               }
-              return Promise.reject("Could not get device raw metrics from API");
-            }
-          );
+            );
+          else
+            return this.get(url + this.BuildURLParametersString(body)).then(
+              data => { return data },
+              (error: HttpErrorResponse) => { 
+                return this.requestMobileAPIErrorHandler(error, url, errorMessage, body, post);
+              }
+            );
         },
         error => { return Promise.reject("Could not get token from storage"); }
       ); 
     }
 
-    sendCommandToDevice(device: Device, command: any): Promise<any> {
-      return this.post(this.ApiEndPoint + '/device/' + device.id + '/command', command).then(
-        data => {
-          return data;
-        },
-        error => {
-          //return Promise.reject("Could not send command to device using API");
-          return {
-            status: "success",
-            message: "Message sent to and received by device"
-          };
-        }
-      )
+    private requestMobileAPIErrorHandler(error: HttpErrorResponse, url: string, errorMessage: string, body?: object, post: boolean = false): Promise<any> {
+      if (error.status == 401) {
+        return this.refreshToken().then(
+          () => {
+            return this.requestMobileAPI(url, errorMessage, body, post);
+          },
+          error => { return Promise.reject("session expired"); }
+        )
+       }
+       return Promise.reject(errorMessage);
     }
 
 }

@@ -20,7 +20,7 @@ export class HttpRequestsProvider {
 
     post(url: string, body: any, urlEncoded?: Boolean): Promise<any> {
       let headerDict = {}
-      headerDict["Content-Type"] =  urlEncoded ? 'application/x-www-form-urlencoded' : 'application/json';
+      headerDict["Content-Type"] =  urlEncoded ? 'application/x-www-form-urlencoded' : 'text/plain';
 
       const requestOptions = {
         headers: new HttpHeaders(headerDict),
