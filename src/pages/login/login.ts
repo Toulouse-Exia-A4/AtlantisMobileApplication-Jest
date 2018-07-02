@@ -89,7 +89,7 @@ export class LoginPage {
             error => { this.loginErrorHandler(error, loader) }
         )
       }, (error) => {
-          alert(error);
+          this.alerts.showErrorAlert(error, "login");
       });
     });
   }
