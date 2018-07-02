@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { LoadingController } from 'ionic-angular';
+import { LoadingController, DateTime } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
@@ -10,7 +10,7 @@ import { ApplicationConfig, MY_CONFIG, MY_CONFIG_TOKEN } from '../app/app.config
 
 
 class Device {
-  id:           number;
+  id:           string;
   deviceId:     String;
   type:         string;
   unit:         string;
@@ -22,8 +22,40 @@ class Device {
     this.deviceId     = obj && obj.deviceId     || null;
     this.type         = obj && obj.type         || null;
     this.unit         = obj && obj.unit         || null;
-    this.calcMetrics  = obj && obj.calcMetrics  || null;
-    this.rawMetrics   = obj && obj.rawMetrics   || null;
+    this.calcMetrics  = [];
+    this.rawMetrics   = [];
+  }
+}
+
+class RawMetric {
+  id:         string;
+  deviceId:   string;
+  date:       Date;
+  value:      string;
+
+  constructor(obj?: any) {
+    this.id         = obj && obj.id                           || null;
+    this.deviceId   = obj && obj.deviceId                     || null;
+    this.date       = obj && obj.date && new Date(obj.date)   || null;
+    this.value      = obj && obj.value                        || null;
+  }
+}
+
+class CalcMetric {
+  id: string;
+  deviceId: string;
+  dateTimeStart: Date;
+  dateTimeEnd: Date;
+  value: number;
+  dataType: string;
+
+  constructor(obj?: any) {
+    this.id             = obj && obj.id                                             ||null;
+    this.deviceId       = obj && obj.deviceId                                       || null;
+    this.dateTimeStart  = obj && obj.dateTimeStart && new Date(obj.dateTimeStart)   || null;
+    this.dateTimeEnd    = obj && obj.dateTimeEnd && new Date(obj.dateTimeEnd)       || null;
+    this.value          = obj && obj.value                                          || null;
+    this.dataType       = obj && obj.dataType                                       || null;
   }
 }
 
@@ -69,16 +101,40 @@ export class MobileAPIProvider extends HttpRequestsProvider {
       )
     }
 
-    getDeviceInfo(device: Device): Promise<Device> {
-      return this.get(this.ApiEndPoint + '/device/' + device.id).then(
-        data => {
-          return data;
+    getDeviceRawMetrics(device: Device, timestamp: number): Promise<Array<RawMetric>> {
+      return this.getUserIdFromStorage().then(
+        userId => {
+          return this.get(this.ApiEndPoint + '/getDeviceRawMetrics?userId=' + userId + '&deviceId=' + device.deviceId + "&timestamp=" + timestamp).then(
+            data => {
+              var rawMetrics = data.map(rawMetric => {return new RawMetric(rawMetric)});
+              return rawMetrics;
+            },
+            error => {
+              return Promise.reject("Could not get device raw metrics from API");
+            }
+          );
+        }, 
+        error => {
+          return Promise.reject("Could not get userId from storage");
+        }
+      );
+    }
+
+    getDeviceCalcMetrics(device: Device, timestamp: number): Promise<Array<CalcMetric>> {
+      return this.getUserIdFromStorage().then(
+        userId => {
+          return this.get(this.ApiEndPoint + '/getDeviceCalcMetrics?userId=' + userId + '&deviceId=' + device.deviceId + "&timestamp=" + timestamp).then(
+            data => {
+              var calcMetrics = data.map(calcMetric => {return new CalcMetric(calcMetric)});
+              return calcMetrics;
+            },
+            error => {
+              return Promise.reject("Could not get device raw metrics from API");
+            }
+          );
         },
         error => {
-          //return Promise.reject("Could not get device info from API");
-          device.calcMetrics = [12, 13, 14];
-          device.rawMetrics = [10, 16, 22];
-          return device;
+          return Promise.reject("Could not get userId from storage");
         }
       );
     }

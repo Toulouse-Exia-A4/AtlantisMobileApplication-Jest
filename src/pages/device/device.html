@@ -7,7 +7,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>device</ion-title>
+    <ion-title>device: {{device.deviceId}}</ion-title>
     <ion-buttons end>
       <button ion-button (click)="openSendCommandToDevicePage()">
         <ion-icon name="paper-plane"></ion-icon>
@@ -15,20 +15,49 @@
     </ion-buttons>
   </ion-navbar>
 
+  <ion-toolbar no-border-top>
+    <ion-segment [(ngModel)]="metricType">
+      <ion-segment-button value="calcMetrics">
+        Calculated Metrics
+      </ion-segment-button>
+      <ion-segment-button value="rawMetrics">
+        Raw Metrics
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
 
 
 <ion-content padding>
-  <h1>{{device.id}}</h1>
+  <div [ngSwitch]="metricType">
+    <div *ngSwitchCase="'calcMetrics'">
+      <ion-spinner *ngIf="loadingCalcMetrics" class="mySpinner"></ion-spinner>
+      <ion-card *ngFor="let metric of device.calcMetrics">
+        <ion-card-header>
+          <div>Start: {{metric.dateTimeStart | date: 'dd/MM/yyyy H:mm:ss'}}</div>
+          <div>End: {{metric.dateTimeEnd | date: 'dd/MM/yyyy H:mm:ss'}}</div>
+        </ion-card-header>
+        <ion-card-content>
+          <div>calc type: {{metric.dataType}}</div>
+          <div>value: {{metric.value}} {{device.unit}}</div>
+        </ion-card-content>
+      </ion-card>
+      <div *ngIf="!loadingCalcMetrics && device.calcMetrics.length == 0" class="center">Sorry, no data for this device</div>
+      <ion-infinite-scroll (ionInfinite)="getCalcMetrics($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </div>
 
-  <h4>Calculated Metrics</h4>
-  <ul *ngFor="let metric of device.calcMetrics">
-    <li>{{metric}}</li>
-  </ul>
-
-  <h4>Raw Metrics</h4>
-  <ul *ngFor="let metric of device.rawMetrics">
-    <li>{{metric}}</li>
-  </ul>
-
+    <div *ngSwitchCase="'rawMetrics'">
+      <ion-spinner *ngIf="loadingRawMetrics" class="mySpinner"></ion-spinner>
+      <ion-card *ngFor="let metric of device.rawMetrics">
+        <ion-card-header>{{metric.date | date: 'dd/MM/yyyy H:mm:ss'}}</ion-card-header>
+        <ion-card-content>value: {{metric.value}} {{device.unit}}</ion-card-content>
+      </ion-card>
+      <div *ngIf="!loadingRawMetrics && device.rawMetrics.length == 0" class="center">Sorry, no data for this device</div>
+      <ion-infinite-scroll (ionInfinite)="getRawMetrics($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </div>
+  </div>
 </ion-content>
