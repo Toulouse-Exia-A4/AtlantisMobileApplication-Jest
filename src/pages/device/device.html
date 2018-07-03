@@ -43,9 +43,9 @@
         </ion-card-content>
       </ion-card>
       <div *ngIf="!loadingCalcMetrics && device.calcMetrics.length == 0" class="center">Sorry, no data for this device</div>
-      <ion-infinite-scroll (ionInfinite)="getCalcMetrics($event)">
+      <!-- <ion-infinite-scroll (ionInfinite)="getCalcMetrics($event)">
         <ion-infinite-scroll-content></ion-infinite-scroll-content>
-      </ion-infinite-scroll>
+      </ion-infinite-scroll> -->
     </div>
 
     <div *ngSwitchCase="'rawMetrics'">

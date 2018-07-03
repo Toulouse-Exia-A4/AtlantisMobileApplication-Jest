@@ -23,7 +23,7 @@ import { EliotAPIProvider } from '../providers/EliotAPI';
 import { MobileAPIProvider } from '../providers/MobileAPI';
 
 const DEFAULT_TIMEOUT = new InjectionToken<number>('defaultTimeout');
-const defaultTimeout = 30000;
+const defaultTimeout = 35000;
 
 @Injectable()
 export class TimeoutInterceptor implements HttpInterceptor {

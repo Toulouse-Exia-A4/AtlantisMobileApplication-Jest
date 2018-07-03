@@ -23,16 +23,16 @@ class User {
 }
 
 class Device {
-  id:           string;
   deviceId:     String;
+  name:         string;
   type:         string;
   unit:         string;
   calcMetrics:  Array<Number>;
   rawMetrics:   Array<Number>;
 
   constructor(obj?: any) {
-    this.id           = obj && obj.id           || null;
     this.deviceId     = obj && obj.deviceId     || null;
+    this.name         = obj && obj.name         || null;
     this.type         = obj && obj.type         || null;
     this.unit         = obj && obj.unit         || null;
     this.calcMetrics  = [];
@@ -41,13 +41,11 @@ class Device {
 }
 
 class RawMetric {
-  id:         string;
   deviceId:   string;
   date:       Date;
   value:      string;
 
   constructor(obj?: any) {
-    this.id         = obj && obj.id                           || null;
     this.deviceId   = obj && obj.deviceId                     || null;
     this.date       = obj && obj.date && new Date(obj.date)   || null;
     this.value      = obj && obj.value                        || null;
