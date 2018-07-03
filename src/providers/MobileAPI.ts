@@ -8,6 +8,17 @@ import 'rxjs/add/operator/toPromise';
 import { EliotAPIProvider } from './EliotAPI';
 import { ApplicationConfig, MY_CONFIG, MY_CONFIG_TOKEN } from '../app/app.config';
 
+class User {
+  userId:     string;
+  firstname:  string;
+  lastname:   string;
+
+  constructor(obj?: any) {
+    this.userId     = obj && obj.userId     || null;
+    this.firstname  = obj && obj.firstname  || null;
+    this.lastname   = obj && obj.lastname   || null;
+  }
+}
 
 class Device {
   id:           string;
@@ -78,6 +89,30 @@ export class MobileAPIProvider extends EliotAPIProvider {
         super(http, storage, configuration);
         console.log('Hello MobileAPI Provider');
         this.ApiEndPoint = configuration.mobileApiEndpoint;
+    }
+
+    getUser(): Promise<User> {
+      return this.requestMobileAPI(this.ApiEndPoint + "/getUser", "Could not get user from MobileAPI").then(
+        data => {
+          return new User(data);
+        },
+        error => {
+          return Promise.reject(error); 
+        }
+      )
+    }
+
+    createUser(firstname: string, lastname: string): Promise<User> {
+      var body = {
+        firstname: firstname,
+        lastname: lastname
+      };
+      return this.requestMobileAPI(this.ApiEndPoint + "/createUser", "Could not create user using MobileAPI", body, true).then(
+        data => {
+          return new User(data);
+        },
+        error => { return Promise.reject(error); }
+      )
     }
 
     getUserDevices(): Promise<Array<Device>> {
@@ -170,8 +205,11 @@ export class MobileAPIProvider extends EliotAPIProvider {
           },
           error => { return Promise.reject("session expired"); }
         )
-       }
-       return Promise.reject(errorMessage);
+      }
+      else if (error.status == 404 && error.error == "User does not exist") {
+        return Promise.reject(error);
+      }
+      return Promise.reject(errorMessage);
     }
 
 }
