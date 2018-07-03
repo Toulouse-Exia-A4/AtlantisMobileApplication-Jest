@@ -17,6 +17,7 @@
 
 
 <ion-content padding>
+    <div *ngIf="!isLoading && devices.length == 0" class="center">Sorry, you don't any device connected to your account.</div>
   <ion-card *ngFor="let device of devices" (click)="goToDevice(device)">
     <ion-card-header>{{device.deviceId}}</ion-card-header>
     <ion-card-content>Type: {{device.type}}</ion-card-content>

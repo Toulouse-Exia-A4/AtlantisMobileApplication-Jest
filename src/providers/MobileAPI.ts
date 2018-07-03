@@ -12,11 +12,13 @@ class User {
   userId:     string;
   firstname:  string;
   lastname:   string;
+  devices: Array<Device>;
 
   constructor(obj?: any) {
     this.userId     = obj && obj.userId     || null;
     this.firstname  = obj && obj.firstname  || null;
     this.lastname   = obj && obj.lastname   || null;
+    this.devices    = obj && obj.devices.map(device => {return new Device(device);}) || [];
   }
 }
 
@@ -110,17 +112,6 @@ export class MobileAPIProvider extends EliotAPIProvider {
       return this.requestMobileAPI(this.ApiEndPoint + "/createUser", "Could not create user using MobileAPI", body, true).then(
         data => {
           return new User(data);
-        },
-        error => { return Promise.reject(error); }
-      )
-    }
-
-    getUserDevices(): Promise<Array<Device>> {
-      return this.requestMobileAPI(this.ApiEndPoint + '/getUserDevices', "Could not get user devices from MobileAPI").then(
-        data => {
-          return data.map(item => {
-            return new Device(item);
-          })
         },
         error => { return Promise.reject(error); }
       )

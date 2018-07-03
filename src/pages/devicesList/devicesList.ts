@@ -16,6 +16,7 @@ import { DevicePage } from '../device/device';
 })
 export class DevicesListPage {
   public devices: Array<any>;
+  public isLoading: boolean;
 
   constructor(
     public loadingCtrl: LoadingController,
@@ -26,6 +27,7 @@ export class DevicesListPage {
     public alerts: AlertsProvider,
     public mobileApi: MobileAPIProvider
   ) {
+    this.devices = [];
   }
 
     ionViewDidLoad() {
@@ -33,7 +35,7 @@ export class DevicesListPage {
 
       this.getUser().then(
         data => {
-          this.getDeviceList();
+          this.devices = data.devices;
         }, 
         error => {
           if (error.status)
@@ -46,14 +48,17 @@ export class DevicesListPage {
     getUser(): Promise<any> {
       const loader = this.loadingCtrl.create({content: "loading ..."});
       loader.present();
+      this.isLoading = true;
 
       return this.mobileApi.getUser().then(
         data => {
           loader.dismiss();
-          return Promise.resolve();
+          this.isLoading = false;
+          return data;
         },
         error => {
           loader.dismiss();
+          this.isLoading = false;
           return Promise.reject(error);
         }
       )
@@ -72,13 +77,22 @@ export class DevicesListPage {
             handler: data => {
               const loader = this.loadingCtrl.create({content: "Creating user ..."});
               loader.present();
+              this.isLoading = true;
               this.mobileApi.createUser(data.firstname, data.lastname).then(
                 data => {
                   loader.dismiss();
-                  this.getDeviceList();
+                  this.isLoading = false;
+                  this.getUser().then(
+                    data => {
+                      this.devices = data.devices;
+                    }, 
+                    error => {
+                      this.alerts.showErrorAlert(error, "getUser");
+                    })
                 },
                 error => { 
                   loader.dismiss();
+                  this.isLoading = false;
                   this.alerts.showErrorAlert(error, "createUser");
                 }
               )
@@ -89,27 +103,6 @@ export class DevicesListPage {
       });
 
       createUserAlert.present();
-    }
-
-    getDeviceList() {
-      let loader = this.loadingCtrl.create({
-        content: "Loading Devices List"
-      });
-      //Show the loading indicator
-      loader.present();
-
-      this.mobileApi.getUserDevices().then(
-        data => {
-          loader.dismiss();
-          this.devices = data;
-        },
-        error => {
-          loader.dismiss();
-          console.error('Error getDevices');
-          console.dir(error);
-          this.alerts.showErrorAlert(error, "getDevices");
-        }
-      )
     }
 
     goToDevice(device) {

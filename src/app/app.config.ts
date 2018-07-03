@@ -12,7 +12,7 @@ export const MY_CONFIG = {
         oauthBaseEndpoint: "https://partners-login.eliotbylegrand.com",
         oauthRedirectEndpoint: "https://login.microsoftonline.com/tfp/oauth2/nativeclient"
     },
-    // mobileApiEndpoint: "http://localhost:11080/AtlantisJEE/api/mobile"
+    // mobileApiEndpoint: "http://localhost:7001/AtlantisJEE/api/mobile"
     mobileApiEndpoint: "https://mobile.siju.tk/AtlantisJEE/api/mobile"
 };
 
