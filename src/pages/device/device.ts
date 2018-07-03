@@ -53,14 +53,9 @@ export class DevicePage {
           this.device.rawMetrics = this.device.rawMetrics.concat(data);
           if (data.length == length && infiniteScroll) infiniteScroll.enable(false);
         },
-        error => {
-          if (infiniteScroll) infiniteScroll.complete();
-          else this.loadingRawMetrics = false;
-          console.error('Error getDeviceRawMetrics');
-          console.dir(error);
-          this.alerts.showErrorAlert(error, "getDeviceRawMetrics");
-        }
+        error => { error => { this.errorHandler(error, "getDeviceRawMetrics", infiniteScroll, 'loadingRawMetrics'); } }
       )
+      .catch( error => { this.errorHandler(error, "getDeviceRawMetrics", infiniteScroll, 'loadingRawMetrics'); } )
     }
 
     getCalcMetrics(infiniteScroll?) {
@@ -76,18 +71,21 @@ export class DevicePage {
           this.device.calcMetrics = this.device.calcMetrics.concat(data);
           if (data.length == length && infiniteScroll) infiniteScroll.enable(false);
         },
-        error => {
-          if (infiniteScroll) infiniteScroll.complete();
-          else this.loadingCalcMetrics = false;
-          console.error('Error getDeviceCalcMetrics');
-          console.dir(error);
-          this.alerts.showErrorAlert(error, "getDeviceCalcMetrics");
-        }
+        error => { this.errorHandler(error, 'getDeviceCalcMetrics', infiniteScroll, 'loadingCalcMetrics'); }
       )
+      .catch( error => { this.errorHandler(error, 'getDeviceCalcMetrics', infiniteScroll, 'loadingCalcMetrics'); } )
     }
 
     openSendCommandToDevicePage() {
       this.nav.push(SendCommandToDevicePage, { device: this.device });
+    }
+
+    private errorHandler(error, from: string, infiniteScroll, loading: string) {
+      if (infiniteScroll) infiniteScroll.complete();
+      else this[loading] = false;
+      console.error('Error ' + from);
+      console.dir(error);
+      this.alerts.showErrorAlert(error, from);
     }
 
 }
