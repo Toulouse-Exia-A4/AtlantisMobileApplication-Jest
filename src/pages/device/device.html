@@ -7,7 +7,10 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>device: {{device.name}}</ion-title>
+    <ion-title *ngIf="device.name != null">
+      device: {{device.name}}
+      <div class="right">id: {{device.deviceId}}</div>
+    </ion-title>
     <ion-buttons end>
       <button ion-button (click)="openSendCommandToDevicePage()">
         <ion-icon name="paper-plane"></ion-icon>
